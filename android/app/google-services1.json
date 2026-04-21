@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "712971708627",
-    "project_id": "chat-box-71bb6",
-    "storage_bucket": "chat-box-71bb6.firebasestorage.app"
+    "project_number": "709843844773",
+    "project_id": "health-chatbot-a708a",
+    "storage_bucket": "health-chatbot-a708a.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:712971708627:android:123252246afa7e1ed58c26",
+        "mobilesdk_app_id": "1:709843844773:android:c79c6114d1db69f9c9574c",
         "android_client_info": {
           "package_name": "com.example.health_chatbot"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAyVKCxmmDG-y1_jwBRE_dgbnDXeQZn2l0"
+          "current_key": "AIzaSyBk4HA2iAUZhzkPPpEvamB7lsjRvHaCvLA"
         }
       ],
       "services": {
