@@ -1,0 +1,45 @@
+import 'package:flutter/material.dart';
+import 'package:health_chatbot/screens/login_screen.dart';
+import 'package:health_chatbot/screens/main_screen.dart';
+import 'package:health_chatbot/services/secure_storage_service.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  Future<bool> _isLoggedIn() async {
+    final token = await SecureStorageService().getToken();
+    return token != null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Medication App',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          surface: Colors.white,
+        ),
+        scaffoldBackgroundColor: Colors.white,
+      ),
+      home: FutureBuilder<bool>(
+        future: _isLoggedIn(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          return snapshot.data! ? const MainScreen() : const LoginScreen();
+        },
+      ),
+    );
+  }
+}

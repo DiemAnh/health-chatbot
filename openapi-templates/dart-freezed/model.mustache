@@ -1,0 +1,16 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part '{{filename}}.freezed.dart';
+part '{{filename}}.g.dart';
+
+@freezed
+class {{classname}} with _${{classname}} {
+  const factory {{classname}}({
+{{#vars}}
+    @JsonKey(name: '{{baseName}}') {{datatype}}? {{name}},
+{{/vars}}
+  }) = _{{classname}};
+
+  factory {{classname}}.fromJson(Map<String, dynamic> json)
+      => _${{classname}}FromJson(json);
+}
