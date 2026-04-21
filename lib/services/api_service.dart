@@ -78,6 +78,8 @@ Future<Map<String, String>> _headers({bool auth = false}) async {
 Future<http.Response> postMultipart(
   String path, {
   Map<String, String>? fields,
+  String? filePath,
+  String fieldName = 'file',
   bool auth = false,
 }) async {
   final uri = _uri(path);
@@ -86,6 +88,10 @@ Future<http.Response> postMultipart(
 
   request.headers.addAll(await _headers(auth: auth));
   request.fields.addAll(fields ?? {});
+
+  if (filePath != null) {
+    request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+  }
 
   final streamed = await request.send();
   final res = await http.Response.fromStream(streamed);

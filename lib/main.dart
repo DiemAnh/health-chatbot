@@ -1,10 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:health_chatbot/screens/login_screen.dart';
 import 'package:health_chatbot/screens/main_screen.dart';
 import 'package:health_chatbot/services/secure_storage_service.dart';
 
-void main() {
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  initNotifications();
+
+  await FirebaseMessaging.instance.requestPermission();
+
+  String? token = await FirebaseMessaging.instance.getToken();
+  print("FCM Token: $token");
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    showNotification(message.notification?.title, message.notification?.body);
+  });
+
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    print("Notification clicked: ${message.notification?.title}");
+  });
+
   runApp(const MyApp());
+}
+
+void initNotifications() {
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings initializationSettings =
+      InitializationSettings(android: initializationSettingsAndroid);
+
+  flutterLocalNotificationsPlugin.initialize(initializationSettings);
+}
+
+void showNotification(String? title, String? body) async {
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
+    'default_channel',
+    'Default',
+    importance: Importance.max,
+    priority: Priority.high,
+    playSound: true,
+    sound: RawResourceAndroidNotificationSound('notification'),
+  );
+
+  const NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    title ?? 'No Title',
+    body ?? 'No Body',
+    platformChannelSpecifics,
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -36,7 +92,6 @@ class MyApp extends StatelessWidget {
               body: Center(child: CircularProgressIndicator()),
             );
           }
-
           return snapshot.data! ? const MainScreen() : const LoginScreen();
         },
       ),
