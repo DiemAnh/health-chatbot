@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:health_chatbot/screens/chat_screen.dart';
 import 'package:health_chatbot/screens/dashboard_screen.dart';
 import 'package:health_chatbot/screens/medication_screen.dart';
+import 'package:health_chatbot/screens/noti_screen.dart';
 import 'package:health_chatbot/screens/profile_screen.dart';
 import 'package:health_chatbot/services/auth_service.dart';
 import 'login_screen.dart';
@@ -24,7 +25,7 @@ class _MainScreenState extends State<MainScreen> {
     DashboardScreen(onNavigate: navigate),
     const MedicationScreen(),
     const ChatScreen(),
-    const ProfileScreen(),
+    const NotiScreen(),
     const ProfileScreen(),
   ];
 

@@ -1,176 +1,181 @@
-// import 'dart:convert';
-// import 'package:health_chatbot/screens/user_screen_action/add_user_screen.dart';
-// import 'package:flutter/material.dart';
-// import 'package:health_chatbot/screens/user_screen_action/edit_user_screen.dart';
-// import '../services/api_service.dart';
-// import '../constants/api_constants.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../constants/api_constants.dart';
+import 'package:intl/intl.dart';
 
-// class UserScreen extends StatefulWidget {
-//   const UserScreen({super.key});
+class NotiScreen extends StatefulWidget {
+  const NotiScreen({super.key});
 
-//   @override
-//   State<UserScreen> createState() => _UserScreenState();
-// }
+  @override
+  State<NotiScreen> createState() => _NotiScreenState();
+}
 
-// class _UserScreenState extends State<UserScreen> {
-//   final ApiService _api = ApiService();
+class _NotiScreenState extends State<NotiScreen> {
+  final ApiService _api = ApiService();
 
-//   List users = [];
-//   bool loading = false;
+  List<dynamic> notifications = [];
+  bool isLoading = false;
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     loadUsers();
-//   }
+  @override
+  void initState() {
+    super.initState();
+    loadNotifications();
+  }
 
-//   Future<void> loadUsers() async {
-//     setState(() => loading = true);
+  Future<void> loadNotifications() async {
+    setState(() => isLoading = true);
 
-//     final res = await _api.get(ApiConstants.users, auth: true);
+    try {
+      final res = await _api.get(ApiConstants.notificationsAll, auth: true);
 
-//     if (res.statusCode == 200) {
-//       setState(() {
-//         users = jsonDecode(res.body);
-//       });
-//     }
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['code'] == "200" && data['data'] != null) {
+          setState(() {
+            notifications = data['data'];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Error loading notifications: $e");
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
 
-//     setState(() => loading = false);
-//   }
+  Future<void> markAsRead(int id) async {
+    final res = await _api.post(ApiConstants.markReadNotification(id), auth: true);
+    if (res.statusCode == 200) {
+      loadNotifications();
+    }
+  }
 
-//   Future<void> deleteUser(int id) async {
-//     final res =
-//         await _api.post("${ApiConstants.deleteUser}/$id", auth: true);
+  Future<void> markAllAsRead() async {
+    final res = await _api.post(ApiConstants.markAllReadNotifications, auth: true);
+    if (res.statusCode == 200) {
+      loadNotifications();
+    }
+  }
 
-//     if (res.statusCode == 200) {
-//       loadUsers();
-//     }
-//   }
+  Future<void> deleteNotification(int id) async {
+    final res = await _api.delete(ApiConstants.deleteNotification(id), auth: true);
+    if (res.statusCode == 200) {
+      loadNotifications();
+    }
+  }
 
-//   void confirmDelete(int id) {
-//     showDialog(
-//       context: context,
-//       builder: (_) => AlertDialog(
-//         title: const Text("Delete user?"),
-//         actions: [
-//           TextButton(
-//               onPressed: () => Navigator.pop(context),
-//               child: const Text("Cancel")),
-//           TextButton(
-//             onPressed: () {
-//               Navigator.pop(context);
-//               deleteUser(id);
-//             },
-//             child: const Text("Delete",
-//                 style: TextStyle(color: Colors.red)),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
+  Future<void> deleteAllNotifications() async {
+    final res = await _api.delete(ApiConstants.deleteAllNotifications, auth: true);
+    if (res.statusCode == 200) {
+      loadNotifications();
+    }
+  }
 
-//   void goAdd() async {
-//     final result = await Navigator.push(
-//       context,
-//       MaterialPageRoute(builder: (_) => const AddUserScreen()),
-//     );
+  void confirmDeleteAll() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Xóa tất cả thông báo?"),
+        content: const Text("Bạn có chắc chắn muốn xóa tất cả thông báo không?"),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Hủy")),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              deleteAllNotifications();
+            },
+            child: const Text("Xóa", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 
-//     if (result == true) loadUsers();
-//   }
+  String formatSentTime(String? dateTimeString) {
+    if (dateTimeString == null) return '';
+    try {
+      final dateTime = DateTime.parse(dateTimeString);
+      return DateFormat('HH:mm dd/MM/yyyy').format(dateTime);
+    } catch (e) {
+      return dateTimeString;
+    }
+  }
 
-//   void goEdit(Map item) async {
-//     final result = await Navigator.push(
-//       context,
-//       MaterialPageRoute(
-//         builder: (_) => EditUserScreen(user: item),
-//       ),
-//     );
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Thông báo"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.done_all),
+            tooltip: "Đánh dấu tất cả là đã đọc",
+            onPressed: notifications.isNotEmpty ? markAllAsRead : null,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_sweep),
+            tooltip: "Xóa tất cả",
+            onPressed: notifications.isNotEmpty ? confirmDeleteAll : null,
+          ),
+        ],
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : notifications.isEmpty
+              ? const Center(child: Text("Không có thông báo nào."))
+              : ListView.builder(
+                  itemCount: notifications.length,
+                  itemBuilder: (_, i) {
+                    final noti = notifications[i];
+                    final isRead = noti['isRead'] == true;
 
-//     if (result == true) loadUsers();
-//   }
-
-//   Color statusColor(bool active) =>
-//       active ? Colors.green : Colors.red;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text("Users"),
-//         actions: [
-//           IconButton(
-//               icon: const Icon(Icons.refresh),
-//               onPressed: loadUsers),
-//         ],
-//       ),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: goAdd,
-//         child: const Icon(Icons.add),
-//       ),
-//       body: loading
-//           ? const Center(child: CircularProgressIndicator())
-//           : ListView.builder(
-//               itemCount: users.length,
-//               itemBuilder: (_, i) {
-//                 final u = users[i];
-
-//                 return Padding(
-//                   padding: const EdgeInsets.all(8),
-//                   child: Card(
-//                     shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(16)),
-//                    shadowColor: Colors.transparent,
-//                     child: ListTile(
-//                       title: Row(
-//                         children: [
-//                           Text(u['name'] ?? ''),
-//                             const SizedBox(width: 4),
-//                            Icon(
-//                             Icons.circle,
-//                             size: 12,
-//                             color: statusColor(u['activation']),
-//                           ),
-//                         ],
-//                       ),
-//                       subtitle: Column(
-//                         crossAxisAlignment:
-//                             CrossAxisAlignment.start,
-//                         children: [
-//                           Text("Role: ${u['role']}"),
-//                           Text("Name: ${u['fullName'] ?? ''}"),
-//                           Text("Phone: ${u['phone'] ?? ''}"),
-//                         ],
-//                       ),
-//                       trailing: Column(
-//                         mainAxisAlignment:
-//                             MainAxisAlignment.spaceBetween,
-//                         children: [
-                        
-//                           Row(
-//                             mainAxisSize: MainAxisSize.min,
-//                             children: [
-//                               IconButton(
-//                                 icon: const Icon(Icons.edit_outlined),
-//                                 onPressed: u['canEdit'] == true
-//                                     ? () => goEdit(u)
-//                                     : null,
-//                               ),
-//                               IconButton(
-//                                 icon: const Icon(Icons.delete_outlined,
-//                                     color: Colors.red),
-//                                 onPressed: u['canEdit'] == true
-//                                     ? () => confirmDelete(u['id'])
-//                                     : null,
-//                               ),
-//                             ],
-//                           )
-//                         ],
-//                       ),
-//                     ),
-//                   ),
-//                 );
-//               },
-//             ),
-//     );
-//   }
-// }
+                    return Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: isRead ? Colors.grey.shade300 : Colors.blue.shade200,
+                        ),
+                      ),
+                      color: isRead ? Colors.white : Colors.blue.shade50,
+                      child: ListTile(
+                        onTap: () {
+                          if (!isRead) {
+                            markAsRead(noti['id']);
+                          }
+                        },
+                        title: Text(
+                          noti['title'] ?? '',
+                          style: TextStyle(
+                            fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text(noti['message'] ?? ''),
+                            const SizedBox(height: 8),
+                            Text(
+                              formatSentTime(noti['sentTime']),
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: () => deleteNotification(noti['id']),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+}

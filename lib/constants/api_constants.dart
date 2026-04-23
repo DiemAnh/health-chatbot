@@ -36,4 +36,12 @@ class ApiConstants {
       '/api/v1/chat/get_messages/$id';
   static String deleteConversation(int id) =>
       '/api/v1/chat/delete_conversation/$id';
+
+  // NOTIFICATION
+  static const notificationsAll = '/api/v1/notifications/all';
+  static const notificationsUnread = '/api/v1/notifications/unread';
+  static String deleteNotification(int id) => '/api/v1/notifications/delete/$id';
+  static const deleteAllNotifications = '/api/v1/notifications/delete_all';
+  static String markReadNotification(int id) => '/api/v1/notifications/mark_read/$id';
+  static const markAllReadNotifications = '/api/v1/notifications/mark_all_read';
 }
