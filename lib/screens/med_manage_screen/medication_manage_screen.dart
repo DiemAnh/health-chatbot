@@ -75,17 +75,17 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
   void confirmDelete(int id) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("Xóa thuốc"),
         content: const Text("Bạn có chắc chắn muốn xóa thuốc này không?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text("Hủy"),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               await deleteItem(id);
             },
             child: const Text("Xóa", style: TextStyle(color: Colors.red)),
