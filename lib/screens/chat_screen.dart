@@ -122,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     setState(() {
       messages.add({
-        "role": "user",
+        "role": "USER",
         "content": contentToSend,
         "filePath": fileToSend?.path,
         "fileName": fileToSend?.name,
@@ -157,7 +157,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final data = body['data'];
       setState(() {
         messages.add({
-          "role": "bot",
+          "role": "MODEL",
           "content": data['content']?.toString() ?? "",
           "filePath": data['filePath'],
           "fileType": data['fileType'],
