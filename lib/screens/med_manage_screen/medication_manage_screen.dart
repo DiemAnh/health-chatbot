@@ -24,6 +24,8 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
   }
 
   Future<void> loadData() async {
+    if (!mounted) return;
+
     setState(() {
       _loading = true;
       _error = null;
@@ -35,18 +37,26 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
         auth: true,
       );
 
+      if (!mounted) return;
+
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
         setState(() {
           _medications = body['data'] ?? [];
         });
       } else {
-        _error = "Error: ${res.statusCode}";
+        setState(() {
+          _error = "Error: ${res.statusCode}";
+        });
       }
     } catch (e) {
-      _error = "Connection error";
+      if (!mounted) return;
+      setState(() {
+        _error = "Connection error";
+      });
     }
 
+    if (!mounted) return;
     setState(() => _loading = false);
   }
 
@@ -54,6 +64,8 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
     final res = await _api.delete(
       ApiConstants.deleteMedication(id),
     );
+
+    if (!mounted) return;
 
     if (res.statusCode == 200) {
       loadData();
@@ -63,18 +75,18 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
   void confirmDelete(int id) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("Xóa thuốc"),
         content: const Text("Bạn có chắc chắn muốn xóa thuốc này không?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text("Hủy"),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              deleteItem(id);
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await deleteItem(id);
             },
             child: const Text("Xóa", style: TextStyle(color: Colors.red)),
           ),
@@ -122,19 +134,22 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
               children: [
                 // Header
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.black),
+                            icon: const Icon(Icons.arrow_back,
+                                color: Colors.black),
                             onPressed: () => Navigator.pop(context),
                           ),
                           const SizedBox(width: 8),
                           const Text(
                             "Danh sách thuốc",
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -152,10 +167,13 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                           elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                         ),
-                        icon: const Icon(Icons.add, color: Colors.white, size: 18),
-                        label: const Text("Thêm", style: TextStyle(color: Colors.white)),
+                        icon: const Icon(Icons.add,
+                            color: Colors.white, size: 18),
+                        label: const Text("Thêm",
+                            style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
@@ -178,32 +196,42 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
                             itemCount: _medications.length,
                             itemBuilder: (context, i) {
                               final m = _medications[i];
-                              final totalQty = num.tryParse(m['totalQuantity']?.toString() ?? '0') ?? 0;
+                              final totalQty = num.tryParse(
+                                      m['totalQuantity']?.toString() ?? '0') ??
+                                  0;
                               final isOutOfStock = totalQty <= 0;
 
                               return Card(
-                                color: isOutOfStock ? const Color(0xFFBDBDBD) : Colors.white, // Grey if out of stock
+                                color: isOutOfStock
+                                    ? const Color(0xFFBDBDBD)
+                                    : Colors.white, // Grey if out of stock
                                 elevation: 0,
-                                margin: EdgeInsets.fromLTRB(16, 8, 16, i == _medications.length - 1 ? 24 : 8),
+                                margin: EdgeInsets.fromLTRB(16, 8, 16,
+                                    i == _medications.length - 1 ? 24 : 8),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(25),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(20),
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Image.asset(
                                         'assets/icons/pill.png',
                                         width: 50,
                                         height: 50,
-                                        errorBuilder: (context, error, stackTrace) =>
-                                            const Icon(Icons.medical_services, size: 50, color: Colors.blueGrey),
+                                        errorBuilder: (context, error,
+                                                stackTrace) =>
+                                            const Icon(Icons.medical_services,
+                                                size: 50,
+                                                color: Colors.blueGrey),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               m['name'] ?? '',
@@ -224,7 +252,7 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
                                               ),
                                               const SizedBox(height: 2),
                                               Text(
-                                                "7:00 | 13:00", // Mocked times
+                                                "${m['medicationTime1'] ?? ''}", // Mocked times
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   color: Colors.grey.shade800,
@@ -241,14 +269,21 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
                                             ] else ...[
                                               const SizedBox(height: 8),
                                               Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 6),
                                                 decoration: BoxDecoration(
                                                   color: Colors.grey.shade400,
-                                                  borderRadius: BorderRadius.circular(20),
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
                                                 ),
                                                 child: const Text(
                                                   "Đã hết thuốc",
-                                                  style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+                                                  style: TextStyle(
+                                                      color: Colors.black87,
+                                                      fontWeight:
+                                                          FontWeight.w500),
                                                 ),
                                               ),
                                             ],
@@ -256,18 +291,23 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
                                         ),
                                       ),
                                       Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           IconButton(
                                             onPressed: () => openForm(data: m),
-                                            icon: const Icon(Icons.edit_square, color: Colors.black87),
+                                            icon: const Icon(Icons.edit_square,
+                                                color: Colors.black87),
                                             padding: EdgeInsets.zero,
                                             constraints: const BoxConstraints(),
                                           ),
                                           const SizedBox(height: 16),
                                           IconButton(
-                                            onPressed: () => confirmDelete(m['id']),
-                                            icon: const Icon(Icons.delete_outline, color: Colors.black87),
+                                            onPressed: () =>
+                                                confirmDelete(m['id']),
+                                            icon: const Icon(
+                                                Icons.delete_outline,
+                                                color: Colors.black87),
                                             padding: EdgeInsets.zero,
                                             constraints: const BoxConstraints(),
                                           ),
@@ -296,12 +336,17 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              icon: const Icon(Icons.phone_in_talk, color: Colors.white, size: 24),
+              icon: const Icon(Icons.phone_in_talk,
+                  color: Colors.white, size: 24),
               label: const Text(
                 "Khẩn cấp",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16),
               ),
             ),
           ),

@@ -86,7 +86,7 @@ class _MainScreenState extends State<MainScreen> {
       child: Row(
         children: [
           _navItem(0, 'assets/icons/dashboard.png', "Trang chủ"),
-          _navItem(1, 'assets/icons/drug.png', "Thuốc uống"),
+          _navItem(1, 'assets/icons/drug.png', "Tủ thuốc"),
           const SizedBox(width: 60),
           _navItem(3, 'assets/icons/noti.png', "Thông báo"),
           _navItem(4, 'assets/icons/profile.png', "Hồ sơ"),
