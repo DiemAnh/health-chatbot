@@ -221,6 +221,12 @@ class _MedicationScreenState extends State<MedicationScreen> {
                             itemCount: _medications.length,
                             itemBuilder: (context, i) {
                               final m = _medications[i];
+                              final remainingQty = num.tryParse(
+                                      m['remainingQuantity']?.toString() ??
+                                          '0') ??
+                                  0;
+
+                              final isOutOfStock = remainingQty <= 0;
                               return Card(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(25),
@@ -273,14 +279,16 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                       Align(
                                         alignment: Alignment.centerRight,
                                         child: ElevatedButton(
-                                          onPressed: () async {
-                                            final id = m['id'];
-
-                                            await consumeMedication(id);
-                                          },
+                                          onPressed: isOutOfStock
+                                              ? null
+                                              : () async {
+                                                  await consumeMedication(
+                                                      m['id']);
+                                                },
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                const Color(0xFF65AFE3),
+                                            backgroundColor: isOutOfStock
+                                                ? Colors.grey
+                                                : const Color(0xFF65AFE3),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(20),
@@ -288,9 +296,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 24, vertical: 12),
                                           ),
-                                          child: const Text(
-                                            "Xác nhận",
-                                            style: TextStyle(
+                                          child: Text(
+                                            isOutOfStock
+                                                ? "Đã hết thuốc"
+                                                : "Xác nhận",
+                                            style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 16),
                                           ),
