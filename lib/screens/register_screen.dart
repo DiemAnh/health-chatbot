@@ -10,7 +10,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _nameCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _auth = AuthService();
@@ -75,7 +74,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       await _auth.register(
-        name: _nameCtrl.text.trim(),
+        name: _phoneCtrl.text.trim(),
         password: _passCtrl.text.trim(),
         phoneNumber: _phoneCtrl.text.trim(),
       );
@@ -83,22 +82,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Đăng ký thành công")),
+        const SnackBar(content: Text("Đăng ký thành công, vui lòng đăng nhập")),
       );
 
-      // Automatically login after successful registration
-      await _auth.login(
-        name: _nameCtrl.text.trim(),
-        password: _passCtrl.text.trim(),
-      );
-
-      if (!mounted) return;
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-        (route) => false,
-      );
+      Navigator.pop(context);
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -112,7 +99,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
     _passCtrl.dispose();
     _phoneCtrl.dispose();
     super.dispose();
@@ -149,11 +135,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 30),
                 TextFormField(
-                  controller: _nameCtrl,
-                  decoration: _inputStyle("Tên đăng nhập", Icons.person),
+                  controller: _phoneCtrl,
+                  keyboardType: TextInputType.phone,
+                  decoration: _inputStyle("Số điện thoại", Icons.phone),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return "Vui lòng nhập tên đăng nhập";
+                      return "Vui lòng nhập số điện thoại";
                     }
                     return null;
                   },
@@ -169,18 +156,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     }
                     if (value.length < 6) {
                       return "Mật khẩu phải có ít nhất 6 ký tự";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _phoneCtrl,
-                  keyboardType: TextInputType.phone,
-                  decoration: _inputStyle("Số điện thoại", Icons.phone),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return "Vui lòng nhập số điện thoại";
                     }
                     return null;
                   },
