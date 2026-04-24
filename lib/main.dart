@@ -16,7 +16,7 @@ Future<void> main() async {
   initNotifications();
 
   // Khởi tạo FCM service
-  await FcmService().init();
+
 
   print("Đã khởi tạo xong các dịch vụ, chuẩn bị chạy UI...");
   runApp(const MyApp());

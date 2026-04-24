@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:health_chatbot/screens/medication_screen.dart';
+import 'package:health_chatbot/services/fcm_service.dart';
 import '../services/api_service.dart';
 import '../constants/api_constants.dart';
 
@@ -25,6 +26,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     loadProfile();
+    Fcm();
+  }
+
+  Future<void> Fcm() async {
+    await FcmService().init();
   }
 
   String buildAvatarUrl(String path) {
