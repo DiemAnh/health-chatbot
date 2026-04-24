@@ -123,8 +123,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   },
                   icon: Image.asset(
                     'assets/icons/drug_main.png',
-                    width: 100,
-                    height: 100,
+                    width: 50,
+                    height: 50,
                   ),
                 ),
                 IconButton(
@@ -133,8 +133,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   },
                   icon: Image.asset(
                     'assets/icons/noti_main.png',
-                    width: 100,
-                    height: 100,
+                    width: 50,
+                    height: 50,
                   ),
                 ),
                 IconButton(
@@ -143,8 +143,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   },
                   icon: Image.asset(
                     'assets/icons/profile_main.png',
-                    width: 100,
-                    height: 100,
+                    width: 50,
+                    height: 50,
                   ),
                 ),
               ],

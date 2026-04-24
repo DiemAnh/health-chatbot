@@ -11,12 +11,12 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  // await Firebase.initializeApp();
 
-  initNotifications();
+  // initNotifications();
 
-  // Khởi tạo FCM service
-  await FcmService().init();
+  // // Khởi tạo FCM service
+  // await FcmService().init();
 
   print("Đã khởi tạo xong các dịch vụ, chuẩn bị chạy UI...");
   runApp(const MyApp());
