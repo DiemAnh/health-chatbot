@@ -14,10 +14,10 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final ApiService _api = ApiService();
   late TextEditingController _nameController;
-  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
   late TextEditingController _heightController;
   late TextEditingController _weightController;
-  
+
   DateTime? _selectedDate;
   String? _selectedSex;
   String? _selectedBloodGroup;
@@ -29,11 +29,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.initialData['fullName']);
-    _emailController = TextEditingController(text: widget.initialData['email']);
-    _heightController = TextEditingController(text: widget.initialData['height']?.toString() ?? '0');
-    _weightController = TextEditingController(text: widget.initialData['weight']?.toString() ?? '0');
-    
+    _nameController =
+        TextEditingController(text: widget.initialData['fullName']);
+    _phoneController = TextEditingController(text: widget.initialData['email']);
+    _heightController = TextEditingController(
+        text: widget.initialData['height']?.toString() ?? '0');
+    _weightController = TextEditingController(
+        text: widget.initialData['weight']?.toString() ?? '0');
+
     _selectedSex = widget.initialData['sex'];
     _selectedBloodGroup = widget.initialData['bloodGroup'];
     if (widget.initialData['dateOfBirth'] != null) {
@@ -53,11 +56,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _saveProfile() async {
     setState(() => isSaving = true);
-    
+
     final Map<String, dynamic> body = {
       "fullName": _nameController.text,
-      "email": _emailController.text,
-      "dateOfBirth": _selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : null,
+      "phone": _phoneController.text,
+      "dateOfBirth": _selectedDate != null
+          ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
+          : null,
       "sex": _selectedSex,
       "height": double.tryParse(_heightController.text) ?? 0,
       "weight": double.tryParse(_weightController.text) ?? 0,
@@ -92,38 +97,46 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: "Họ và tên", border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                  labelText: "Họ và tên", border: OutlineInputBorder()),
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: "Email", border: OutlineInputBorder()),
+              controller: _phoneController,
+              decoration: const InputDecoration(
+                  labelText: "Số điện thoại", border: OutlineInputBorder()),
             ),
             const SizedBox(height: 16),
-            
             ListTile(
-              title: Text(_selectedDate == null ? "Chọn ngày sinh" : "Ngày sinh: ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}"),
+              title: Text(_selectedDate == null
+                  ? "Chọn ngày sinh"
+                  : "Ngày sinh: ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}"),
               trailing: const Icon(Icons.calendar_today),
-              shape: RoundedRectangleBorder(side: const BorderSide(color: Colors.grey), borderRadius: BorderRadius.circular(4)),
+              shape: RoundedRectangleBorder(
+                  side: const BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(4)),
               onTap: _pickDate,
             ),
             const SizedBox(height: 16),
-
             DropdownButtonFormField<String>(
               value: _sexOptions.contains(_selectedSex) ? _selectedSex : null,
-              decoration: const InputDecoration(labelText: "Giới tính", border: OutlineInputBorder()),
-              items: _sexOptions.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+              decoration: const InputDecoration(
+                  labelText: "Giới tính", border: OutlineInputBorder()),
+              items: _sexOptions
+                  .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                  .toList(),
               onChanged: (val) => setState(() => _selectedSex = val),
             ),
             const SizedBox(height: 16),
-
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _heightController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: "Chiều cao (cm)", border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                        labelText: "Chiều cao (cm)",
+                        border: OutlineInputBorder()),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -131,30 +144,37 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: TextField(
                     controller: _weightController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: "Cân nặng (kg)", border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                        labelText: "Cân nặng (kg)",
+                        border: OutlineInputBorder()),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-
             DropdownButtonFormField<String>(
-              value: _bloodGroups.contains(_selectedBloodGroup) ? _selectedBloodGroup : null,
-              decoration: const InputDecoration(labelText: "Nhóm máu", border: OutlineInputBorder()),
-              items: _bloodGroups.map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
+              value: _bloodGroups.contains(_selectedBloodGroup)
+                  ? _selectedBloodGroup
+                  : null,
+              decoration: const InputDecoration(
+                  labelText: "Nhóm máu", border: OutlineInputBorder()),
+              items: _bloodGroups
+                  .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                  .toList(),
               onChanged: (val) => setState(() => _selectedBloodGroup = val),
             ),
-            
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
                 onPressed: isSaving ? null : _saveProfile,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
-                child: isSaving 
-                  ? const CircularProgressIndicator(color: Colors.white) 
-                  : const Text("LƯU THÔNG TIN"),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white),
+                child: isSaving
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text("LƯU THÔNG TIN"),
               ),
             ),
           ],
@@ -166,7 +186,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
+    _phoneController.dispose();
     _heightController.dispose();
     _weightController.dispose();
     super.dispose();
