@@ -128,54 +128,57 @@ class _NotiScreenState extends State<NotiScreen> {
           ? const Center(child: CircularProgressIndicator())
           : notifications.isEmpty
               ? const Center(child: Text("Không có thông báo nào."))
-              : ListView.builder(
-                  itemCount: notifications.length,
-                  itemBuilder: (_, i) {
-                    final noti = notifications[i];
-                    final isRead = noti['isRead'] == true;
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(
-                          color: isRead ? Colors.grey.shade300 : Colors.blue.shade200,
-                        ),
-                      ),
-                      color: isRead ? Colors.white : Colors.blue.shade50,
-                      child: ListTile(
-                        onTap: () {
-                          if (!isRead) {
-                            markAsRead(noti['id']);
-                          }
-                        },
-                        title: Text(
-                          noti['title'] ?? '',
-                          style: TextStyle(
-                            fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+              : Padding(
+                padding: const EdgeInsets.only(bottom: 80.0),
+                child: ListView.builder(
+                    itemCount: notifications.length,
+                    itemBuilder: (_, i) {
+                      final noti = notifications[i];
+                      final isRead = noti['isRead'] == true;
+                
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: isRead ? Colors.grey.shade300 : Colors.blue.shade200,
                           ),
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 4),
-                            Text(noti['message'] ?? ''),
-                            const SizedBox(height: 8),
-                            Text(
-                              formatSentTime(noti['sentTime']),
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        color: isRead ? Colors.white : Colors.blue.shade50,
+                        child: ListTile(
+                          onTap: () {
+                            if (!isRead) {
+                              markAsRead(noti['id']);
+                            }
+                          },
+                          title: Text(
+                            noti['title'] ?? '',
+                            style: TextStyle(
+                              fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
                             ),
-                          ],
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(noti['message'] ?? ''),
+                              const SizedBox(height: 8),
+                              Text(
+                                formatSentTime(noti['sentTime']),
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                            onPressed: () => deleteNotification(noti['id']),
+                          ),
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
-                          onPressed: () => deleteNotification(noti['id']),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
+              ),
     );
   }
 }
