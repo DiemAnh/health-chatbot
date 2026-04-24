@@ -136,26 +136,13 @@ class _MedicationScreenState extends State<MedicationScreen> {
           children: [
             Column(
               children: [
-                // Header
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const SizedBox(
-                          width: 48), // Spacer to balance the right icon
-                      const Text(
-                        "Lịch uống thuốc",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.list, color: Colors.black),
+                         IconButton(
+                        icon: const Icon(Icons.menu, color: Colors.black),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -166,6 +153,15 @@ class _MedicationScreenState extends State<MedicationScreen> {
                             loadData();
                           });
                         },
+                      ), 
+                      const Text(
+                        "Lịch uống thuốc",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ],
                   ),
@@ -317,11 +313,10 @@ class _MedicationScreenState extends State<MedicationScreen> {
               ],
             ),
             Positioned(
-              bottom: 90, // Above bottom bar
+              bottom: 90, 
               right: 16,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Khẩn cấp action
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD32F2F), // Red

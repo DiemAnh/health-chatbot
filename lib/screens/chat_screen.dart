@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:health_chatbot/screens/chat_drawer/conversation_drawer.dart';
 import '../constants/api_constants.dart';
 import '../services/api_service.dart';
 import 'package:file_picker/file_picker.dart';
@@ -25,7 +26,7 @@ class _ChatScreenState extends State<ChatScreen> {
   List<Map<String, dynamic>> messages = [];
   bool sending = false;
   PlatformFile? _selectedFile;
-  
+
   final _audioRecorder = AudioRecorder();
   bool _isRecording = false;
 
@@ -50,7 +51,8 @@ class _ChatScreenState extends State<ChatScreen> {
       } else {
         if (await _audioRecorder.hasPermission()) {
           final tempDir = await getTemporaryDirectory();
-          final path = '${tempDir.path}/recorded_${DateTime.now().millisecondsSinceEpoch}.mp3';
+          final path =
+              '${tempDir.path}/recorded_${DateTime.now().millisecondsSinceEpoch}.mp3';
 
           await _audioRecorder.start(
             const RecordConfig(encoder: AudioEncoder.aacLc),
@@ -110,12 +112,12 @@ class _ChatScreenState extends State<ChatScreen> {
     if (text.trim().isEmpty && _selectedFile == null) return;
 
     final fileToSend = _selectedFile;
-    
- 
-    final bool isAudio = fileToSend != null && 
-        fileToSend.extension != null && 
-        ['mp3', 'wav', 'm4a', 'aac'].contains(fileToSend.extension!.toLowerCase());
-        
+
+    final bool isAudio = fileToSend != null &&
+        fileToSend.extension != null &&
+        ['mp3', 'wav', 'm4a', 'aac']
+            .contains(fileToSend.extension!.toLowerCase());
+
     final String contentToSend = isAudio ? "" : text;
 
     setState(() {
@@ -213,6 +215,21 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> loadMessages(int id) async {
+    final res = await _api.get(
+      ApiConstants.getMessages(id),
+      auth: true,
+    );
+
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+
+      setState(() {
+        messages = List<Map<String, dynamic>>.from(body['data'] ?? []);
+      });
+    }
+  }
+
   Widget bubble(Map<String, dynamic> msg) {
     final isUser = msg['role'] == 'user';
     final content = msg['content']?.toString() ?? "";
@@ -220,7 +237,10 @@ class _ChatScreenState extends State<ChatScreen> {
     final fileName = msg['fileName'];
     final fileType = msg['fileType']?.toString() ?? "";
     final isAudio = msg['isAudio'] == true || fileType.startsWith('audio');
-    final isImage = fileType.startsWith('image') || (fileName != null && RegExp(r'\.(jpg|jpeg|png)$', caseSensitive: false).hasMatch(fileName));
+    final isImage = fileType.startsWith('image') ||
+        (fileName != null &&
+            RegExp(r'\.(jpg|jpeg|png)$', caseSensitive: false)
+                .hasMatch(fileName));
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -232,27 +252,34 @@ class _ChatScreenState extends State<ChatScreen> {
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
-          crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment:
+              isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             if (filePath != null) ...[
-              if (isImage) 
+              if (isImage)
                 const Icon(Icons.image, size: 40, color: Colors.white70)
               else if (isAudio)
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.audiotrack, color: isUser ? Colors.white : Colors.black54),
+                    Icon(Icons.audiotrack,
+                        color: isUser ? Colors.white : Colors.black54),
                     const SizedBox(width: 8),
-                    Text("Audio file", style: TextStyle(color: isUser ? Colors.white : Colors.black)),
+                    Text("Audio file",
+                        style: TextStyle(
+                            color: isUser ? Colors.white : Colors.black)),
                   ],
                 )
-              else 
+              else
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.attach_file, color: isUser ? Colors.white : Colors.black54),
+                    Icon(Icons.attach_file,
+                        color: isUser ? Colors.white : Colors.black54),
                     const SizedBox(width: 8),
-                    Text(fileName ?? "Attachment", style: TextStyle(color: isUser ? Colors.white : Colors.black)),
+                    Text(fileName ?? "Attachment",
+                        style: TextStyle(
+                            color: isUser ? Colors.white : Colors.black)),
                   ],
                 ),
               if (content.isNotEmpty) const SizedBox(height: 8),
@@ -284,7 +311,39 @@ class _ChatScreenState extends State<ChatScreen> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
+      drawer: Drawer(
+        child: ConversationDrawer(
+          onSelect: (id) async {
+            Navigator.pop(context);
+
+            setState(() {
+              conversationId = id;
+              messages.clear();
+            });
+
+            await loadMessages(id);
+          },
+          onCreateNew: () async {
+            Navigator.pop(context);
+
+            final id = await createConversation();
+
+            if (id != null) {
+              setState(() {
+                conversationId = id;
+                messages.clear();
+              });
+            }
+          },
+        ),
+      ),
       appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
         title: const Text("Bắt đầu trò chuyện"),
         actions: [
           if (messages.isNotEmpty)
@@ -324,14 +383,20 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               if (_selectedFile != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   color: Colors.grey.shade100,
                   child: Row(
                     children: [
                       Icon(
-                        ['mp3', 'wav', 'm4a', 'aac'].contains(_selectedFile!.extension?.toLowerCase()) 
-                          ? Icons.audiotrack 
-                          : Icons.image,
+                        [
+                          'mp3',
+                          'wav',
+                          'm4a',
+                          'aac'
+                        ].contains(_selectedFile!.extension?.toLowerCase())
+                            ? Icons.audiotrack
+                            : Icons.image,
                         color: Colors.blue,
                       ),
                       const SizedBox(width: 8),
@@ -353,7 +418,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 margin: EdgeInsets.only(
                   left: 16,
                   right: 16,
-                  bottom: bottomInset + 80, 
+                  bottom: bottomInset + 80,
                   top: 8,
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -378,11 +443,14 @@ class _ChatScreenState extends State<ChatScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.fiber_manual_record, color: Colors.red, size: 16),
+                                  const Icon(Icons.fiber_manual_record,
+                                      color: Colors.red, size: 16),
                                   const SizedBox(width: 8),
                                   Text(
                                     "Đang ghi âm...",
-                                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
@@ -398,7 +466,8 @@ class _ChatScreenState extends State<ChatScreen> {
                               decoration: const InputDecoration(
                                 hintText: "Nhập tin nhắn...",
                                 border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(vertical: 10),
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 10),
                               ),
                             ),
                         ],
@@ -419,7 +488,8 @@ class _ChatScreenState extends State<ChatScreen> {
                               child: SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               ),
                             )
                           : IconButton(
