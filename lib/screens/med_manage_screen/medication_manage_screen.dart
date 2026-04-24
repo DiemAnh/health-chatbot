@@ -197,7 +197,7 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
                             itemBuilder: (context, i) {
                               final m = _medications[i];
                               final totalQty = num.tryParse(
-                                      m['totalQuantity']?.toString() ?? '0') ??
+                                      m['remainingQuantity']?.toString() ?? '0') ??
                                   0;
                               final isOutOfStock = totalQty <= 0;
 
