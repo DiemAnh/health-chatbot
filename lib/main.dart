@@ -15,10 +15,14 @@ Future<void> main() async {
 
   initNotifications();
 
-  await FirebaseMessaging.instance.requestPermission();
-
-  String? token = await FirebaseMessaging.instance.getToken();
-  print("FCM Token: $token");
+  // Bọc quá trình lấy Token vào try-catch để tránh crash luồng khởi chạy
+  try {
+    await FirebaseMessaging.instance.requestPermission();
+    String? token = await FirebaseMessaging.instance.getToken();
+    print("FCM Token: $token");
+  } catch (e) {
+    print("Lỗi khi lấy FCM Token (thường xảy ra trên iOS Simulator): $e");
+  }
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     showNotification(message.notification?.title, message.notification?.body);
@@ -28,6 +32,7 @@ Future<void> main() async {
     print("Notification clicked: ${message.notification?.title}");
   });
 
+  print("Đã khởi tạo xong các dịch vụ, chuẩn bị chạy UI...");
   runApp(const MyApp());
 }
 
@@ -35,8 +40,16 @@ void initNotifications() {
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  const InitializationSettings initializationSettings =
-      InitializationSettings(android: initializationSettingsAndroid);
+  // 2. Thêm cấu hình cho iOS (Darwin)
+  const DarwinInitializationSettings initializationSettingsIOS =
+      DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
+
+  const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
 
   flutterLocalNotificationsPlugin.initialize(initializationSettings);
 }
