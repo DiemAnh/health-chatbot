@@ -129,7 +129,7 @@ class _NotiScreenState extends State<NotiScreen> {
           : notifications.isEmpty
               ? const Center(child: Text("Không có thông báo nào."))
               : Padding(
-                padding: const EdgeInsets.only(bottom: 80.0),
+                padding: const EdgeInsets.only(bottom:100.0),
                 child: ListView.builder(
                     itemCount: notifications.length,
                     itemBuilder: (_, i) {

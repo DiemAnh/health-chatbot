@@ -1,6 +1,8 @@
+
+
 import 'package:flutter/material.dart';
-import '../../constants/api_constants.dart';
-import '../../services/api_service.dart';
+import 'package:health_chatbot/constants/api_constants.dart';
+import 'package:health_chatbot/services/api_service.dart';
 
 class MedicationFormScreen extends StatefulWidget {
   final Map? data;
@@ -17,12 +19,16 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
   final nameCtrl = TextEditingController();
   final dosageAmountCtrl = TextEditingController();
   final dosageUnitCtrl = TextEditingController();
-  final frequencyCtrl = TextEditingController();
   final totalQuantityCtrl = TextEditingController();
+
   final time1Ctrl = TextEditingController();
+  final time2Ctrl = TextEditingController();
+  final time3Ctrl = TextEditingController();
+
   final startDateCtrl = TextEditingController();
   final endDateCtrl = TextEditingController();
 
+  int frequency = 1;
   bool _loading = false;
 
   @override
@@ -34,9 +40,14 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
       nameCtrl.text = d['name'] ?? '';
       dosageAmountCtrl.text = "${d['dosageAmount'] ?? ''}";
       dosageUnitCtrl.text = d['dosageUnit'] ?? '';
-      frequencyCtrl.text = d['frequency'] ?? '';
       totalQuantityCtrl.text = "${d['totalQuantity'] ?? ''}";
+
+      frequency = int.tryParse("${d['frequency'] ?? 1}") ?? 1;
+
       time1Ctrl.text = d['medicationTime1'] ?? '';
+      time2Ctrl.text = d['medicationTime2'] ?? '';
+      time3Ctrl.text = d['medicationTime3'] ?? '';
+
       startDateCtrl.text = d['startDate'] ?? '';
       endDateCtrl.text = d['endDate'] ?? '';
     }
@@ -66,7 +77,8 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
     );
 
     if (time != null) {
-      ctrl.text = "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+      ctrl.text =
+          "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
     }
   }
 
@@ -88,9 +100,13 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
       "name": nameCtrl.text,
       "dosageAmount": int.tryParse(dosageAmountCtrl.text) ?? 0,
       "dosageUnit": dosageUnitCtrl.text,
-      "frequency": frequencyCtrl.text,
+      "frequency": frequency,
       "totalQuantity": int.tryParse(totalQuantityCtrl.text) ?? 0,
       "medicationTime1": formatTime(time1Ctrl.text),
+      "medicationTime2":
+          frequency >= 2 ? formatTime(time2Ctrl.text) : null,
+      "medicationTime3":
+          frequency >= 3 ? formatTime(time3Ctrl.text) : null,
       "startDate": startDateCtrl.text,
       "endDate": endDateCtrl.text,
     };
@@ -126,17 +142,16 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
     setState(() => _loading = false);
   }
 
-  @override
-  void dispose() {
-    nameCtrl.dispose();
-    dosageAmountCtrl.dispose();
-    dosageUnitCtrl.dispose();
-    frequencyCtrl.dispose();
-    totalQuantityCtrl.dispose();
-    time1Ctrl.dispose();
-    startDateCtrl.dispose();
-    endDateCtrl.dispose();
-    super.dispose();
+  Widget timeField(String label, TextEditingController ctrl) {
+    return TextField(
+      controller: ctrl,
+      readOnly: true,
+      onTap: () => pickTime(ctrl),
+      decoration: InputDecoration(
+        labelText: label,
+        suffixIcon: const Icon(Icons.access_time),
+      ),
+    );
   }
 
   Widget dateField(String label, TextEditingController ctrl) {
@@ -147,18 +162,6 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
       decoration: InputDecoration(
         labelText: label,
         suffixIcon: const Icon(Icons.calendar_today),
-      ),
-    );
-  }
-
-  Widget timeField(String label, TextEditingController ctrl) {
-    return TextField(
-      controller: ctrl,
-      readOnly: true,
-      onTap: () => pickTime(ctrl),
-      decoration: InputDecoration(
-        labelText: label,
-        suffixIcon: const Icon(Icons.access_time),
       ),
     );
   }
@@ -188,33 +191,73 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
               controller: dosageUnitCtrl,
               decoration: const InputDecoration(labelText: "Đơn vị"),
             ),
-            TextField(
-              controller: frequencyCtrl,
+
+            /// 🔥 DROPDOWN TẦN SUẤT
+            DropdownButtonFormField<int>(
+              value: frequency,
               decoration: const InputDecoration(labelText: "Tần suất"),
+              items: const [
+                DropdownMenuItem(value: 1, child: Text("1 lần/ngày")),
+                DropdownMenuItem(value: 2, child: Text("2 lần/ngày")),
+                DropdownMenuItem(value: 3, child: Text("3 lần/ngày")),
+              ],
+              onChanged: (val) {
+                setState(() {
+                  frequency = val ?? 1;
+
+                  /// clear field khi giảm
+                  if (frequency < 3) time3Ctrl.clear();
+                  if (frequency < 2) time2Ctrl.clear();
+                });
+              },
             ),
+
             TextField(
               controller: totalQuantityCtrl,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: "Số lượng"),
             ),
-            timeField("Giờ uống (HH:mm)", time1Ctrl),
+
             const SizedBox(height: 12),
+
+            /// 🔥 TIME DYNAMIC
+            timeField("Giờ uống 1", time1Ctrl),
+
+            if (frequency >= 2)
+              timeField("Giờ uống 2", time2Ctrl),
+
+            if (frequency >= 3)
+              timeField("Giờ uống 3", time3Ctrl),
+
+            const SizedBox(height: 12),
+
+
+            const SizedBox(height: 16),
+
             ElevatedButton(
-              onPressed: _loading
-                  ? null
-                  : () async {
-                      await submit();
-                      if (widget.data == null) {
-                        await _api.get(ApiConstants.medications, auth: true);
-                      }
-                    },
+              onPressed: _loading ? null : submit,
               child: _loading
                   ? const CircularProgressIndicator(color: Colors.white)
                   : Text(isEdit ? "Cập nhật" : "Thêm mới"),
-            )
+            ),
           ],
         ),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    nameCtrl.dispose();
+    dosageAmountCtrl.dispose();
+    dosageUnitCtrl.dispose();
+    totalQuantityCtrl.dispose();
+    time1Ctrl.dispose();
+    time2Ctrl.dispose();
+    time3Ctrl.dispose();
+    startDateCtrl.dispose();
+    endDateCtrl.dispose();
+    super.dispose();
+  }
 }
+

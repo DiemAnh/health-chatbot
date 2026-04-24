@@ -231,7 +231,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget bubble(Map<String, dynamic> msg) {
-    final isUser = msg['role'] == 'user';
+    final role = msg['role'];
+    final isUser = role == 'USER';
     final content = msg['content']?.toString() ?? "";
     final filePath = msg['filePath'];
     final fileName = msg['fileName'];
@@ -311,30 +312,33 @@ class _ChatScreenState extends State<ChatScreen> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
-      drawer: Drawer(
-        child: ConversationDrawer(
-          onSelect: (id) async {
-            Navigator.pop(context);
-
-            setState(() {
-              conversationId = id;
-              messages.clear();
-            });
-
-            await loadMessages(id);
-          },
-          onCreateNew: () async {
-            Navigator.pop(context);
-
-            final id = await createConversation();
-
-            if (id != null) {
+      drawer: Padding(
+        padding: const EdgeInsets.only(bottom:80),
+        child: Drawer(
+          child: ConversationDrawer(
+            onSelect: (id) async {
+              Navigator.pop(context);
+        
               setState(() {
                 conversationId = id;
                 messages.clear();
               });
-            }
-          },
+        
+              await loadMessages(id);
+            },
+            onCreateNew: () async {
+              Navigator.pop(context);
+        
+              final id = await createConversation();
+        
+              if (id != null) {
+                setState(() {
+                  conversationId = id;
+                  messages.clear();
+                });
+              }
+            },
+          ),
         ),
       ),
       appBar: AppBar(

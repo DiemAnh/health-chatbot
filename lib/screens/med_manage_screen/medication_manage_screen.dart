@@ -154,7 +154,7 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
-                              decoration: TextDecoration.underline,
+                
                             ),
                           ),
                         ],
@@ -167,8 +167,7 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                           elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.fromLTRB(8, 8, 16, 8)
                         ),
                         icon: const Icon(Icons.add,
                             color: Colors.white, size: 18),
