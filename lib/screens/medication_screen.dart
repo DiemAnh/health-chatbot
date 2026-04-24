@@ -85,6 +85,23 @@ class _MedicationScreenState extends State<MedicationScreen> {
     );
   }
 
+  Future<void> consumeMedication(int id) async {
+    final res = await _api.post(
+      ApiConstants.consumeMedication(id),
+      auth: true,
+    );
+
+    if (!mounted) return;
+
+    if (res.statusCode == 200) {
+      loadData();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi: ${res.statusCode}")),
+      );
+    }
+  }
+
   Widget info(String label, dynamic value) {
     return Text("$label: ${value ?? ''}");
   }
@@ -241,7 +258,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                                 ),
                                                 const SizedBox(height: 4),
                                                 Text(
-                                                  "7:00 AM | ${m['dosageAmount'] ?? '1'} ${m['dosageUnit'] ?? 'viên'}",
+                                                  "${m['medicationTime1'] ?? ''} | ${m['dosageAmount'] ?? '1'} ${m['dosageUnit'] ?? 'viên'}",
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     color: Colors.grey.shade700,
@@ -256,7 +273,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
                                       Align(
                                         alignment: Alignment.centerRight,
                                         child: ElevatedButton(
-                                          onPressed: () {},
+                                          onPressed: () async {
+                                            final id = m['id'];
+
+                                            await consumeMedication(id);
+                                          },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor:
                                                 const Color(0xFF65AFE3),

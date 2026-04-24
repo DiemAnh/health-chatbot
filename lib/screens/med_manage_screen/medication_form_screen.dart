@@ -199,10 +199,6 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
             ),
             timeField("Giờ uống (HH:mm)", time1Ctrl),
             const SizedBox(height: 12),
-            dateField("Ngày bắt đầu", startDateCtrl),
-            const SizedBox(height: 12),
-            dateField("Ngày kết thúc", endDateCtrl),
-            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _loading
                   ? null
