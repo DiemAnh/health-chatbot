@@ -89,8 +89,21 @@ class _MedicationScreenState extends State<MedicationScreen> {
     return Text("$label: ${value ?? ''}");
   }
 
+  final GlobalKey<NavigatorState> _navKey = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
+    return Navigator(
+      key: _navKey,
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (navContext) => _buildMainContent(navContext),
+        );
+      },
+    );
+  }
+
+  Widget _buildMainContent(BuildContext context) {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }

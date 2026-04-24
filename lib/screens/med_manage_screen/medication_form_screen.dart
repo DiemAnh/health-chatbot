@@ -59,6 +59,28 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
     }
   }
 
+  Future<void> pickTime(TextEditingController ctrl) async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (time != null) {
+      ctrl.text = "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+    }
+  }
+
+  String formatTime(String timeInput) {
+    if (timeInput.isEmpty) return "";
+    final parts = timeInput.split(':');
+    if (parts.length >= 2) {
+      final h = int.tryParse(parts[0]) ?? 0;
+      final m = int.tryParse(parts[1]) ?? 0;
+      return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}";
+    }
+    return timeInput;
+  }
+
   Future<void> submit() async {
     setState(() => _loading = true);
 
@@ -68,7 +90,7 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
       "dosageUnit": dosageUnitCtrl.text,
       "frequency": frequencyCtrl.text,
       "totalQuantity": int.tryParse(totalQuantityCtrl.text) ?? 0,
-      "medicationTime1": time1Ctrl.text,
+      "medicationTime1": formatTime(time1Ctrl.text),
       "startDate": startDateCtrl.text,
       "endDate": endDateCtrl.text,
     };
@@ -129,6 +151,18 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
     );
   }
 
+  Widget timeField(String label, TextEditingController ctrl) {
+    return TextField(
+      controller: ctrl,
+      readOnly: true,
+      onTap: () => pickTime(ctrl),
+      decoration: InputDecoration(
+        labelText: label,
+        suffixIcon: const Icon(Icons.access_time),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.data != null;
@@ -163,10 +197,7 @@ class _MedicationFormScreenState extends State<MedicationFormScreen> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: "Số lượng"),
             ),
-            TextField(
-              controller: time1Ctrl,
-              decoration: const InputDecoration(labelText: "Giờ uống (HH:mm)"),
-            ),
+            timeField("Giờ uống (HH:mm)", time1Ctrl),
             const SizedBox(height: 12),
             dateField("Ngày bắt đầu", startDateCtrl),
             const SizedBox(height: 12),

@@ -108,112 +108,204 @@ class _MedicationManageScreenState extends State<MedicationManageScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Quản lý thuốc"),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: ElevatedButton.icon(
-              onPressed: () => openForm(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xE365AFE3),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              icon: const Icon(Icons.add, color: Colors.white, size: 18),
-              label: const Text("Thêm", style: TextStyle(color: Colors.white)),
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/background.jpg',
+              fit: BoxFit.cover,
             ),
           ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: loadData,
-        child: _error != null
-            ? SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.8,
-                  child: Center(child: Text(_error!)),
-                ),
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.only(bottom: 20),
-                itemCount: _medications.length,
-                itemBuilder: (context, i) {
-                  final m = _medications[i];
-
-                  return Card(
-                    color: Colors.white,
-                    elevation: 2,
-                    margin: EdgeInsets.fromLTRB(16, 8, 16, i == _medications.length - 1 ? 24 : 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(color: Colors.grey.shade100),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
                         children: [
-                          Image.asset(
-                            'assets/icons/pill.png',
-                            width: 60,
-                            height: 60,
-                            errorBuilder: (context, error, stackTrace) => 
-                              const Icon(Icons.medical_services, size: 60, color: Colors.blueGrey),
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back, color: Colors.black),
+                            onPressed: () => Navigator.pop(context),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  m['name'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                info("Liều lượng", "${m['dosageAmount']} ${m['dosageUnit']}"),
-                                info("Tần suất", m['frequency']),
-                                info("Số lượng", m['totalQuantity']),
-                                info("Ngày bắt đầu", m['startDate']),
-                                info("Ngày kết thúc", m['endDate']),
-                                const SizedBox(height: 12),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    TextButton.icon(
-                                      onPressed: () => confirmDelete(m['id']),
-                                      icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                                      label: const Text("Xóa", style: TextStyle(color: Colors.red)),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    ElevatedButton.icon(
-                                      onPressed: () => openForm(data: m),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xE365AFE3),
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(30),
-                                        ),
-                                      ),
-                                      icon: const Icon(Icons.edit, color: Colors.white, size: 18),
-                                      label: const Text("Sửa", style: TextStyle(color: Colors.white)),
-                                    ),
-                                  ],
-                                )
-                              ],
+                          const SizedBox(width: 8),
+                          const Text(
+                            "Danh sách thuốc",
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              decoration: TextDecoration.underline,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  );
-                },
+                      ElevatedButton.icon(
+                        onPressed: () => openForm(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF65AFE3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        ),
+                        icon: const Icon(Icons.add, color: Colors.white, size: 18),
+                        label: const Text("Thêm", style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: loadData,
+                    child: _error != null
+                        ? SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.8,
+                              child: Center(child: Text(_error!)),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 100),
+                            itemCount: _medications.length,
+                            itemBuilder: (context, i) {
+                              final m = _medications[i];
+                              final totalQty = num.tryParse(m['totalQuantity']?.toString() ?? '0') ?? 0;
+                              final isOutOfStock = totalQty <= 0;
+
+                              return Card(
+                                color: isOutOfStock ? const Color(0xFFBDBDBD) : Colors.white, // Grey if out of stock
+                                elevation: 0,
+                                margin: EdgeInsets.fromLTRB(16, 8, 16, i == _medications.length - 1 ? 24 : 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Image.asset(
+                                        'assets/icons/pill.png',
+                                        width: 50,
+                                        height: 50,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            const Icon(Icons.medical_services, size: 50, color: Colors.blueGrey),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              m['name'] ?? '',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            if (!isOutOfStock) ...[
+                                              Text(
+                                                "${m['dosageAmount'] ?? ''} ${m['dosageUnit'] ?? ''} - ${m['frequency'] ?? ''}",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.grey.shade800,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                "7:00 | 13:00", // Mocked times
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.grey.shade800,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                "Còn $totalQty viên",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.grey.shade800,
+                                                ),
+                                              ),
+                                            ] else ...[
+                                              const SizedBox(height: 8),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.shade400,
+                                                  borderRadius: BorderRadius.circular(20),
+                                                ),
+                                                child: const Text(
+                                                  "Đã hết thuốc",
+                                                  style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          IconButton(
+                                            onPressed: () => openForm(data: m),
+                                            icon: const Icon(Icons.edit_square, color: Colors.black87),
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          IconButton(
+                                            onPressed: () => confirmDelete(m['id']),
+                                            icon: const Icon(Icons.delete_outline, color: Colors.black87),
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 90, // Above bottom bar padding
+            right: 16,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                // Khẩn cấp action
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD32F2F), // Red
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
+              icon: const Icon(Icons.phone_in_talk, color: Colors.white, size: 24),
+              label: const Text(
+                "Khẩn cấp",
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
