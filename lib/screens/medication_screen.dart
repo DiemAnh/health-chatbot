@@ -312,31 +312,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 ),
               ],
             ),
-            Positioned(
-              bottom: 90, 
-              right: 16,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD32F2F), // Red
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                icon: const Icon(Icons.phone_in_talk,
-                    color: Colors.white, size: 24),
-                label: const Text(
-                  "Khẩn cấp",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16),
-                ),
-              ),
-            ),
           ],
         ),
       ),
